@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import re
+from sender_helper import Buffer
 
 def get_file():
 	p = os.getcwd()
@@ -30,12 +31,7 @@ def get_MSS():
 	return MSS
 
 def setup_socket():
-	s = socket.socket()          
-	port = 7735             
-	s.connect(('', port)) 
-	s.send(('SYN').encode())
-	# receive data from the server 
-	print(s.recv(1024).decode())
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)                     
 	return s
 
 def get_data_packets(data, size):
@@ -70,13 +66,11 @@ def add_header(data_packets):
 		sequence_number = sequence_number + 1
 	return packets
 
+def get_seq_from_ack_packet(ack_packet):
+	seq_bits = ack_packet[0:32]
+	seq_num = int(seq_bits, 2)
+	return seq_num
 
-def send(socket, data):
-	for packet in data:
-		print("Send")
-		print(packet)
-		socket.send(packet.encode())
-		print(socket.recv(1024).decode())
 
 def main():
 	e, file_name = get_file()
@@ -94,5 +88,17 @@ def main():
 		data = data + line
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
-	send(s, udp_ready_packets) 
+
+	buffer = Buffer(udp_ready_packets, int(N))
+	buffer.load_packets()
+	
+	while buffer.is_not_finished:
+		buffer.update_buffer()
+		buffer.send_buffer()
+		buffer.check_timers()
+		buffer.receive_from_server()
+		print(buffer.get_packets_in_route())
+		
+
+
 main()
