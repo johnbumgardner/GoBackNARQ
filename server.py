@@ -58,7 +58,7 @@ def create_ack(seq_num):
 
 def main():
 
-	data_buffer = {}
+	data_buffer = []
 
 	P = get_user_prob()
 	s = setup_socket()  
@@ -74,7 +74,8 @@ def main():
    		if dropped_value  < float(P) and isValidPacket or "FIN" in incoming_packet.decode(): #packet gets kept and ack'd
    			print("Packet Kept")
 
-   			data_buffer[expected_seq_num] = incoming_packet.decode()[65:]
+
+   			
    			
    			ack_packet = create_ack(expected_seq_num)
    			expected_seq_num += 1
@@ -83,8 +84,13 @@ def main():
    				notDone = 0
    				print("Received finish")
    				s.sendto("FINACK".encode(), client_address)
+   			else:
+   				data_buffer.append(incoming_packet.decode()[65:])
    		else: #discard the packet and allow the client to time out
    			print("Packet Dropped")
 	
-	#s.close()
+	f = open("receivedfile.txt", "a")
+	for i in data_buffer:
+		f.write(i)
+	f.close()
 main()

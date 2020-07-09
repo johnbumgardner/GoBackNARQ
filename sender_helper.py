@@ -29,7 +29,7 @@ class Buffer:
 		self.packets_to_send = len(data)
 		for i in self.all_packets:
 			self.packet_status[i] = "Not Sent";
-			self.packet_timers[i] = Timer(.0002)
+			self.packet_timers[i] = Timer(.02)
 
 	def update_buffer(self):
 		if self.end_ptr >= self.packets_to_send:
@@ -68,11 +68,10 @@ class Buffer:
 				self.s.close()
 
 	def check_timers(self):
-		print("Hit a timeout")
 		while True:
 			for i in self.active_packets:
 				if self.packet_timers[i].timeout() : #arbitrary timeout condition
-				
+					#print("Timeout, sequence number =" + i[0:32])
 					self.packet_status[i] = "Awaiting ACK"
 					self.s.sendto(i.encode(), (socket.gethostname(), 7735))
 					self.packet_timers[i].start()
