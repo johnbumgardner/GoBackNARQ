@@ -57,11 +57,11 @@ def create_ack(seq_num):
 
 	return ack_packet
 
-def main(argv):
+def main(arguments):
+	print(arguments)
 
-	print(str(sys.argv))
-	file_name = sys.argv[1]
-	P = sys.argv[2]
+	file_name = arguments[0]
+	P = arguments[1]
 	P = 1 - float(P) 
 	data_buffer = []
 
@@ -88,7 +88,7 @@ def main(argv):
    			if("FIN" in incoming_packet.decode()):
    				notDone = 0
    				print("Received finish")
-   				s.sendto("FINACK".encode(), client_address)
+   				#s.sendto("FINACK".encode(), client_address)
    			else:
    				data_buffer.append(incoming_packet.decode()[65:])
    		else: #discard the packet and allow the client to time out
@@ -98,7 +98,7 @@ def main(argv):
 	for i in data_buffer:
 		f.write(i)
 	f.close()
-
+	s.close()
 
 if __name__ == "__main__":
    main(sys.argv[1:])

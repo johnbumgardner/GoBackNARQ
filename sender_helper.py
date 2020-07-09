@@ -30,7 +30,7 @@ class Buffer:
 		self.ip_addr = ip_addr
 		for i in self.all_packets:
 			self.packet_status[i] = "Not Sent";
-			self.packet_timers[i] = Timer(.02)
+			self.packet_timers[i] = Timer(.0002)
 
 	def update_buffer(self):
 		if self.end_ptr >= self.packets_to_send:

@@ -73,13 +73,13 @@ def get_seq_from_ack_packet(ack_packet):
 	return seq_num
 
 
-def main(argv):
-	cli_args = (sys.argv)
-
-	file_name = "RFC_files/" + cli_args[1]
-	N = cli_args[2]
-	MSS = cli_args[3]
-	ip_addr = cli_args[4]
+def main(arguments):
+	cli_args = arguments
+	print(arguments)
+	file_name = "RFC_files/" + cli_args[0]
+	N = cli_args[1]
+	MSS = cli_args[2]
+	ip_addr = cli_args[3]
 
 	#open the file to read
 	file = open(file_name, 'r')
@@ -99,6 +99,7 @@ def main(argv):
 		buffer.send_buffer()
 		buffer.receive_from_server()
 
+	s.close()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
