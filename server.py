@@ -41,7 +41,7 @@ def udp_checksum(msg):
 def get_user_prob():
 	print("Enter the P value")
 	P = input("$")
-	P = 1 - int(P) 
+	P = 1 - float(P) 
 	return P
 
 def create_ack(seq_num):
@@ -81,6 +81,10 @@ def main():
    			s.sendto(ack_packet.encode(), client_address)
    			if("FIN" in incoming_packet.decode()):
    				notDone = 0
+   				print("Received finish")
+   				s.sendto("FINACK".encode(), client_address)
    		else: #discard the packet and allow the client to time out
    			print("Packet Dropped")
+	
+	#s.close()
 main()

@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import re
+import threading
 from sender_helper import Buffer
 
 def get_file():
@@ -91,14 +92,12 @@ def main():
 
 	buffer = Buffer(udp_ready_packets, int(N))
 	buffer.load_packets()
-	
+	a = threading.Thread(target=buffer.check_timers, name='Thread-a', daemon=True)
+	a.start()
 	while buffer.is_not_finished:
 		buffer.update_buffer()
 		buffer.send_buffer()
-		buffer.check_timers()
+		#buffer.check_timers()
 		buffer.receive_from_server()
-		print(buffer.get_packets_in_route())
-		
-
 
 main()
