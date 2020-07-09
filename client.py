@@ -73,13 +73,13 @@ def get_seq_from_ack_packet(ack_packet):
 	return seq_num
 
 
-def main():
-	e, file_name = get_file()
-	if e == 1:
-		print("Invalid file")
-		sys.exit(0)
-	N = get_N()
-	MSS = get_MSS()
+def main(argv):
+	cli_args = (sys.argv)
+
+	file_name = "RFC_files/" + cli_args[1]
+	N = cli_args[2]
+	MSS = cli_args[3]
+	ip_addr = cli_args[4]
 
 	#open the file to read
 	file = open(file_name, 'r')
@@ -90,14 +90,15 @@ def main():
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
 
-	buffer = Buffer(udp_ready_packets, int(N))
+	buffer = Buffer(udp_ready_packets, int(N), ip_addr)
 	buffer.load_packets()
 	a = threading.Thread(target=buffer.check_timers, name='Thread-a', daemon=True)
 	a.start()
 	while buffer.is_not_finished:
 		buffer.update_buffer()
 		buffer.send_buffer()
-		#buffer.check_timers()
 		buffer.receive_from_server()
 
-main()
+
+if __name__ == "__main__":
+   main(sys.argv[1:])

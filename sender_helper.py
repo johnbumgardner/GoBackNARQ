@@ -16,17 +16,18 @@ class Buffer:
 	packet_status = {}
 	end_ptr = 0
 	is_not_finished = True
-
+	ip_addr = ""
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 	#hashmap that maps a packet to its timer
 	packet_timers = {}
 	
-	def __init__(self, data, window_size):
+	def __init__(self, data, window_size, ip_addr):
 		self.all_packets = data
 		self.end_ptr = window_size - 1
 		self.window_size = window_size
 		self.packets_to_send = len(data)
+		self.ip_addr = ip_addr
 		for i in self.all_packets:
 			self.packet_status[i] = "Not Sent";
 			self.packet_timers[i] = Timer(.02)
@@ -47,7 +48,7 @@ class Buffer:
 		for i in self.active_packets:
 			if self.packet_status[i] == "In Buffer":
 				#print(i)
-				self.s.sendto(i.encode(), (socket.gethostname(), 7735))
+				self.s.sendto(i.encode(), (self.ip_addr, 7735))
 				self.packet_status[i] = "Awaiting ACK"
 				self.packet_timers[i].start()
 

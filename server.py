@@ -1,5 +1,6 @@
 import socket                
 import random 
+import sys
 def setup_socket():
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)          
 	port = 7735  
@@ -56,11 +57,15 @@ def create_ack(seq_num):
 
 	return ack_packet
 
-def main():
+def main(argv):
 
+	print(str(sys.argv))
+	file_name = sys.argv[1]
+	P = sys.argv[2]
+	P = 1 - float(P) 
 	data_buffer = []
 
-	P = get_user_prob()
+	#P = get_user_prob()
 	s = setup_socket()  
 	expected_seq_num = 0  
 	notDone = 1      
@@ -89,8 +94,11 @@ def main():
    		else: #discard the packet and allow the client to time out
    			print("Packet Dropped")
 	
-	f = open("receivedfile.txt", "a")
+	f = open(file_name, "a")
 	for i in data_buffer:
 		f.write(i)
 	f.close()
-main()
+
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
