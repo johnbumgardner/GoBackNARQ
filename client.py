@@ -4,32 +4,7 @@ import socket
 import re
 import threading
 from sender_helper import Buffer
-
-def get_file():
-	p = os.getcwd()
-	os.chdir(os.getcwd()+"/RFC_files")
-	files = os.listdir()
-	print("Choose a file to transfer")
-	count = 1
-	for i in files:
-		print(str(count) + " " + i)
-		count = count + 1
-	file_name = input("$ ")
-	error_flag = 1
-	for i in files:
-		if i == file_name:
-			error_flag = 0
-	return (error_flag, file_name)
-
-def get_N():
-	print("Enter the N value")
-	N = input("$")
-	return N
-
-def get_MSS():
-	print("Enter the MSS value")
-	MSS= input("$")
-	return MSS
+from timer import Timer
 
 def setup_socket():
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)                     
@@ -90,6 +65,8 @@ def main(arguments):
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
 
+	t = Timer(300)
+	t.start()
 	buffer = Buffer(udp_ready_packets, int(N), ip_addr)
 	buffer.load_packets()
 	a = threading.Thread(target=buffer.check_timers, name='Thread-a', daemon=True)
@@ -99,7 +76,14 @@ def main(arguments):
 		buffer.send_buffer()
 		buffer.receive_from_server()
 
-	s.close()
-
+	#send the file again via TCP so the server can check to ensure the transmission was error free
+	tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	tcp_socket.connect((ip_addr, 7734)) #paralell port to run TCP connection
+	for i in data_packets:
+		tcp_socket.send(i.encode())
+	tcp_socket.send("573FINISHED573".encode())
+	tcp_socket.close()
+	#s.close()
+	print("Time to send file: " + str(t.get_runtime()))
 if __name__ == "__main__":
    main(sys.argv[1:])
