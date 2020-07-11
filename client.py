@@ -4,32 +4,8 @@ import socket
 import re
 import threading
 from sender_helper import Buffer
-
-def get_file():
-	p = os.getcwd()
-	os.chdir(os.getcwd()+"/RFC_files")
-	files = os.listdir()
-	print("Choose a file to transfer")
-	count = 1
-	for i in files:
-		print(str(count) + " " + i)
-		count = count + 1
-	file_name = input("$ ")
-	error_flag = 1
-	for i in files:
-		if i == file_name:
-			error_flag = 0
-	return (error_flag, file_name)
-
-def get_N():
-	print("Enter the N value")
-	N = input("$")
-	return N
-
-def get_MSS():
-	print("Enter the MSS value")
-	MSS= input("$")
-	return MSS
+from timer import Timer
+import time
 
 def setup_socket():
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)                     
@@ -57,6 +33,7 @@ def add_header(data_packets):
 	data_packet_indicator = "0101010101010101"
 	packets = []
 	for segment in data_packets:
+
 		checksum = udp_checksum(segment)
 		checksum_bin = "{0:b}".format(checksum)
 		checksum_string = checksum_bin.zfill(16)
@@ -73,13 +50,13 @@ def get_seq_from_ack_packet(ack_packet):
 	return seq_num
 
 
-def main():
-	e, file_name = get_file()
-	if e == 1:
-		print("Invalid file")
-		sys.exit(0)
-	N = get_N()
-	MSS = get_MSS()
+def main(arguments):
+	cli_args = arguments
+	print(arguments)
+	file_name = "RFC_files/" + cli_args[0]
+	N = cli_args[1]
+	MSS = cli_args[2]
+	ip_addr = cli_args[3]
 
 	#open the file to read
 	file = open(file_name, 'r')
@@ -87,17 +64,32 @@ def main():
 	data = ""
 	for line in file:
 		data = data + line
+	print(data)
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
 
-	buffer = Buffer(udp_ready_packets, int(N))
+	t = Timer(300)
+	t.start()
+	buffer = Buffer(udp_ready_packets, int(N), ip_addr)
 	buffer.load_packets()
 	a = threading.Thread(target=buffer.check_timers, name='Thread-a', daemon=True)
 	a.start()
 	while buffer.is_not_finished:
 		buffer.update_buffer()
 		buffer.send_buffer()
-		#buffer.check_timers()
 		buffer.receive_from_server()
 
-main()
+
+	#send the file again via TCP so the server can check to ensure the transmission was error free
+	tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	tcp_socket.connect((ip_addr, 7734)) #paralell port to run TCP connection
+	for i in data_packets:
+		tcp_socket.send(i.encode())
+		time.sleep(.0002)
+	tcp_socket.send("573FINISHED573".encode())
+	tcp_socket.close()
+	print("Time to send file: " + str(t.get_runtime()))
+	#s.close()
+	
+if __name__ == "__main__":
+   main(sys.argv[1:])

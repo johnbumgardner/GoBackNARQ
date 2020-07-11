@@ -28,3 +28,6 @@ class Timer(object):
             return False
         else:
             return time.time() - self._start_time >= self._duration
+
+    def get_runtime(self):
+        return time.time() - self._start_time
