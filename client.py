@@ -5,6 +5,7 @@ import re
 import threading
 from sender_helper import Buffer
 from timer import Timer
+import time
 
 def setup_socket():
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)                     
@@ -32,6 +33,7 @@ def add_header(data_packets):
 	data_packet_indicator = "0101010101010101"
 	packets = []
 	for segment in data_packets:
+
 		checksum = udp_checksum(segment)
 		checksum_bin = "{0:b}".format(checksum)
 		checksum_string = checksum_bin.zfill(16)
@@ -62,6 +64,7 @@ def main(arguments):
 	data = ""
 	for line in file:
 		data = data + line
+	print(data)
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
 
@@ -76,14 +79,17 @@ def main(arguments):
 		buffer.send_buffer()
 		buffer.receive_from_server()
 
+
 	#send the file again via TCP so the server can check to ensure the transmission was error free
 	tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	tcp_socket.connect((ip_addr, 7734)) #paralell port to run TCP connection
 	for i in data_packets:
 		tcp_socket.send(i.encode())
+		time.sleep(.0002)
 	tcp_socket.send("573FINISHED573".encode())
 	tcp_socket.close()
-	#s.close()
 	print("Time to send file: " + str(t.get_runtime()))
+	#s.close()
+	
 if __name__ == "__main__":
    main(sys.argv[1:])
