@@ -108,7 +108,7 @@ class Buffer:
 			for i in self.active_packets:
 				if self.packet_timers[i].timeout()  and  self.packet_status[i] == "Awaiting ACK" and self.is_not_finished: #arbitrary timeout condition
 					self.packet_timers[i].stop()
-					print("Send again, sequence number =" + str(int(i[0:32],2)))
+					print("Timeout, sequence number = " + str(int(i[0:32],2)))
 					self.packet_status[i] = "Awaiting ACK"
 					self.s.sendto(i.encode(), (self.ip_addr, 7735))
 					self.packet_timers[i].start()

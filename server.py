@@ -104,7 +104,7 @@ def main(arguments):
    			else:
    				data_buffer.append(incoming_packet.decode()[65:])
    		else: #discard the packet and allow the client to time out
-   			print("Packet Dropped, expected = " + str(expected_seq_num - 1))
+   			print("Packet loss, sequence number = " + str(expected_seq_num - 1))
 	
 
 	correct_file = []
@@ -129,5 +129,6 @@ def main(arguments):
 	print("File written to " + file_name)
 	s.close()
 	serverSocket.close()
+
 if __name__ == "__main__":
    main(sys.argv[1:])
