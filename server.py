@@ -90,21 +90,21 @@ def main(arguments):
 	expected_seq_num = 0  
 	notDone = 1      
 	while notDone: 
-   		incoming_packet, client_address = s.recvfrom(2048)
+   		incoming_packet, client_address = s.recvfrom(4096)
    		isValidPacket = is_valid_checksum(incoming_packet.decode()) and is_valid_seq(incoming_packet.decode(), expected_seq_num)
    		dropped_value = random.random()
-   		if (dropped_value  < float(P) and isValidPacket) or "FIN" in incoming_packet.decode(): #packet gets kept and ack'd
+   		if (dropped_value  < float(P) and isValidPacket) or "573FIN573" in incoming_packet.decode(): #packet gets kept and ack'd
    			print("Packet Kept")
    			ack_packet = create_ack(expected_seq_num)
    			expected_seq_num += 1
    			s.sendto(ack_packet.encode(), client_address)
-   			if("FIN" in incoming_packet.decode()):
+   			if("573FIN573" in incoming_packet.decode()):
    				notDone = 0
    				
    			else:
    				data_buffer.append(incoming_packet.decode()[65:])
    		else: #discard the packet and allow the client to time out
-   			print("Packet Dropped, expected = " + str(expected_seq_num - 1))
+   			print("Packet loss, sequence number = " + str(expected_seq_num - 1))
 	
 
 	correct_file = []
@@ -129,5 +129,6 @@ def main(arguments):
 	print("File written to " + file_name)
 	s.close()
 	serverSocket.close()
+
 if __name__ == "__main__":
    main(sys.argv[1:])

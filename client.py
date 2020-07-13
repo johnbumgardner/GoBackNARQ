@@ -64,7 +64,6 @@ def main(arguments):
 	data = ""
 	for line in file:
 		data = data + line
-	print(data)
 	data_packets = get_data_packets(data, MSS)
 	udp_ready_packets = add_header(data_packets)
 
